@@ -103,8 +103,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "アプリ起動完了！" -ForegroundColor Green
 
-# 5. logcat追跡
-Write-Host "`n[5/5] Godotのログ出力を追跡開始 (Ctrl+Cで終了)..." -ForegroundColor Yellow
-Write-Host "--------------------------------------------------" -ForegroundColor DarkGray
-& adb -s $deviceId logcat -c
-& adb -s $deviceId logcat -s Godot
+# 5. 直近ログの確認
+Write-Host "`n[5/5] アプリの起動状態を確認中..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
+& adb -s $deviceId logcat -d -s Godot:V AndroidRuntime:E | Select-Object -Last 15
+Write-Host "==================================================" -ForegroundColor Green
+Write-Host "   デプロイおよび起動が正常に完了しました！       " -ForegroundColor Green
+Write-Host "==================================================" -ForegroundColor Green

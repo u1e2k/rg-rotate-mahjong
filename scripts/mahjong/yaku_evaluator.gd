@@ -11,14 +11,14 @@ class AgariResult:
 	var score_text: String = ""
 
 # シャンテン数計算 (0=テンパイ, -1=和了)
-static func calculate_shanten(tile_counts: Array[int]) -> int:
+static func calculate_shanten(tile_counts: Array) -> int:
 	var shanten_standard = _shanten_standard(tile_counts)
 	var shanten_chitoi = _shanten_chitoitsu(tile_counts)
 	var shanten_kokushi = _shanten_kokushi(tile_counts)
 	return mini(shanten_standard, mini(shanten_chitoi, shanten_kokushi))
 
 # 七対子のシャンテン数
-static func _shanten_chitoitsu(counts: Array[int]) -> int:
+static func _shanten_chitoitsu(counts: Array) -> int:
 	var pairs = 0
 	var kinds = 0
 	for c in counts:
@@ -32,7 +32,7 @@ static func _shanten_chitoitsu(counts: Array[int]) -> int:
 	return shanten
 
 # 国士無双のシャンテン数
-static func _shanten_kokushi(counts: Array[int]) -> int:
+static func _shanten_kokushi(counts: Array) -> int:
 	var terminals = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
 	var kinds = 0
 	var has_pair = false
@@ -46,7 +46,7 @@ static func _shanten_kokushi(counts: Array[int]) -> int:
 
 # ----------------- 高速標準形シャンテン数 (スート分割法 & Vector2i最適化) -----------------
 
-static func _shanten_standard(counts: Array[int]) -> int:
+static func _shanten_standard(counts: Array) -> int:
 	var min_shanten = 8
 
 	# 1. 雀頭ありのケース
@@ -73,7 +73,7 @@ static func _shanten_standard(counts: Array[int]) -> int:
 
 	return min_shanten
 
-static func _calc_total_mentsu_taatsu(counts: Array[int]) -> Vector2i:
+static func _calc_total_mentsu_taatsu(counts: Array) -> Vector2i:
 	var man = _calc_suit_mentsu_taatsu(counts, 0)
 	var pin = _calc_suit_mentsu_taatsu(counts, 9)
 	var sou = _calc_suit_mentsu_taatsu(counts, 18)
@@ -91,8 +91,8 @@ static func _calc_total_mentsu_taatsu(counts: Array[int]) -> Vector2i:
 		man.y + pin.y + sou.y + ji_t
 	)
 
-static func _calc_suit_mentsu_taatsu(counts: Array[int], offset: int) -> Vector2i:
-	var sub: Array[int] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+static func _calc_suit_mentsu_taatsu(counts: Array, offset: int) -> Vector2i:
+	var sub: Array = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 	var total_tiles = 0
 	for i in range(9):
 		var c = counts[offset + i]
@@ -104,7 +104,7 @@ static func _calc_suit_mentsu_taatsu(counts: Array[int], offset: int) -> Vector2
 
 	return _search_sub_suit(sub, 0, 0, 0)
 
-static func _search_sub_suit(sub: Array[int], idx: int, m: int, t: int) -> Vector2i:
+static func _search_sub_suit(sub: Array, idx: int, m: int, t: int) -> Vector2i:
 	while idx < 9 and sub[idx] == 0:
 		idx += 1
 	if idx >= 9:
@@ -180,7 +180,7 @@ static func _search_sub_suit(sub: Array[int], idx: int, m: int, t: int) -> Vecto
 
 # ----------------- 和了・役評価 -----------------
 
-static func evaluate_hand(hand: Array[int], win_tile: int, is_tsumo: bool, is_riichi: bool, is_ippatsu: bool, dora_indicators: Array[int], is_dealer: bool) -> AgariResult:
+static func evaluate_hand(hand: Array, win_tile: int, is_tsumo: bool, is_riichi: bool, is_ippatsu: bool, dora_indicators: Array, is_dealer: bool) -> AgariResult:
 	var result = AgariResult.new()
 	var counts: Array[int] = []
 	counts.resize(34)

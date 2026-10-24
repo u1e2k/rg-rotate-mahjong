@@ -66,6 +66,33 @@ corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
 shadow_size = 20
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riichi_badge"]
+bg_color = Color(0.85, 0.12, 0.15, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.85, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riichi_banner"]
+bg_color = Color(0.75, 0.08, 0.1, 0.95)
+border_width_top = 3
+border_width_bottom = 3
+border_color = Color(1, 0.85, 0.2, 1)
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inspection_banner"]
+bg_color = Color(0.06, 0.14, 0.22, 0.95)
+border_width_top = 2
+border_color = Color(0.3, 0.75, 1, 1)
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 8
+
 [node name="MahjongTable" type="Node2D"]
 process_mode = 1
 script = ExtResource("1_table")
@@ -186,14 +213,28 @@ offset_bottom = 720.0
 
 [node name="Score0" type="Label" parent="Scores"]
 layout_mode = 0
-offset_left = 240.0
+offset_left = 200.0
 offset_top = 560.0
-offset_right = 480.0
+offset_right = 460.0
 offset_bottom = 586.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 15
 text = "自家: 25000点"
 horizontal_alignment = 1
+
+[node name="RiichiBadge0" type="Label" parent="Scores"]
+visible = false
+layout_mode = 0
+offset_left = 465.0
+offset_top = 560.0
+offset_right = 525.0
+offset_bottom = 586.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_riichi_badge")
+text = "立直"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Score1" type="Label" parent="Scores"]
 layout_mode = 0
@@ -204,6 +245,20 @@ offset_bottom = 312.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "下家: 25000点"
+
+[node name="RiichiBadge1" type="Label" parent="Scores"]
+visible = false
+layout_mode = 0
+offset_left = 475.0
+offset_top = 258.0
+offset_right = 535.0
+offset_bottom = 282.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_riichi_badge")
+text = "立直"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Score2" type="Label" parent="Scores"]
 layout_mode = 0
@@ -216,6 +271,20 @@ theme_override_font_sizes/font_size = 14
 text = "対面: 25000点"
 horizontal_alignment = 1
 
+[node name="RiichiBadge2" type="Label" parent="Scores"]
+visible = false
+layout_mode = 0
+offset_left = 470.0
+offset_top = 138.0
+offset_right = 530.0
+offset_bottom = 164.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_riichi_badge")
+text = "立直"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Score3" type="Label" parent="Scores"]
 layout_mode = 0
 offset_left = 30.0
@@ -225,6 +294,20 @@ offset_bottom = 312.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "上家: 25000点"
+
+[node name="RiichiBadge3" type="Label" parent="Scores"]
+visible = false
+layout_mode = 0
+offset_left = 30.0
+offset_top = 258.0
+offset_right = 90.0
+offset_bottom = 282.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_riichi_badge")
+text = "立直"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="PlayerHand" type="Control" parent="."]
 layout_mode = 3
@@ -294,6 +377,37 @@ text = "[◀/▶]: 牌選択  |  [A]: 打牌  |  [▲]: アクション  |  [STA
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="RiichiLayer" type="CanvasLayer" parent="."]
+layer = 70
+visible = false
+
+[node name="Banner" type="Panel" parent="RiichiLayer"]
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -44.0
+offset_bottom = 44.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_riichi_banner")
+
+[node name="Label" type="Label" parent="RiichiLayer/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.3, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 32
+text = "対面 立直！"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PauseMenu" parent="." instance=ExtResource("2_pause")]
 
 [node name="ResultLayer" type="CanvasLayer" parent="."]
@@ -352,21 +466,58 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="BtnNext" type="Button" parent="ResultLayer/Center/Panel/VBox"]
-custom_minimum_size = Vector2(280, 48)
+custom_minimum_size = Vector2(280, 44)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
 theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
 theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
 text = "▶ 次の局へ"
 
-[node name="BtnTitle" type="Button" parent="ResultLayer/Center/Panel/VBox"]
-custom_minimum_size = Vector2(280, 48)
+[node name="BtnViewBoard" type="Button" parent="ResultLayer/Center/Panel/VBox"]
+custom_minimum_size = Vector2(280, 44)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "⌕ 盤面を見る [X]"
+
+[node name="BtnTitle" type="Button" parent="ResultLayer/Center/Panel/VBox"]
+custom_minimum_size = Vector2(280, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 17
 theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
 theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
 theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
 text = "⌂ タイトルへ"
+
+[node name="BoardInspectionLayer" type="CanvasLayer" parent="."]
+layer = 95
+visible = false
+
+[node name="Banner" type="Panel" parent="BoardInspectionLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -54.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_inspection_banner")
+
+[node name="Label" type="Label" parent="BoardInspectionLayer/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "【盤面確認中】 [A] / [B] / [X]ボタンで結果に戻る"
+horizontal_alignment = 1
+vertical_alignment = 1

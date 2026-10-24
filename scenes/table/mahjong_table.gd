@@ -15,6 +15,12 @@ class_name MahjongTable
 @onready var score_label_1: Label = $Scores/Score1
 @onready var score_label_2: Label = $Scores/Score2
 @onready var score_label_3: Label = $Scores/Score3
+@onready var riichi_badge_0: Label = $Scores/RiichiBadge0
+@onready var riichi_badge_1: Label = $Scores/RiichiBadge1
+@onready var riichi_badge_2: Label = $Scores/RiichiBadge2
+@onready var riichi_badge_3: Label = $Scores/RiichiBadge3
+@onready var riichi_layer: CanvasLayer = $RiichiLayer
+@onready var riichi_banner_label: Label = $RiichiLayer/Banner/Label
 @onready var action_bar: HBoxContainer = $PlayerHand/ActionBar
 @onready var btn_tsumo: Button = $PlayerHand/ActionBar/BtnTsumo
 @onready var btn_riichi: Button = $PlayerHand/ActionBar/BtnRiichi
@@ -25,7 +31,9 @@ class_name MahjongTable
 @onready var result_detail: Label = $ResultLayer/Center/Panel/VBox/DetailLabel
 @onready var result_score: Label = $ResultLayer/Center/Panel/VBox/ScoreLabel
 @onready var btn_result_next: Button = $ResultLayer/Center/Panel/VBox/BtnNext
+@onready var btn_result_board: Button = $ResultLayer/Center/Panel/VBox/BtnViewBoard
 @onready var btn_result_title: Button = $ResultLayer/Center/Panel/VBox/BtnTitle
+@onready var board_inspection_layer: CanvasLayer = $BoardInspectionLayer
 
 var tile_scene = preload("res://scenes/table/tile_node.tscn")
 
@@ -38,13 +46,15 @@ var tsumo_node: TileNode = null
 var is_action_mode: bool = false
 var is_riichi_selection_mode: bool = false
 var riichi_candidate_indices: Array[int] = []
+var is_inspecting_board: bool = false
+var last_winner_idx: int = -1
 
 const SIZE_HAND_TILE = Vector2(42, 58)
 const SIZE_DISCARD_TILE = Vector2(18, 25)
 const SIZE_DORA_TILE = Vector2(24, 33)
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_PAUSABLE
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	pause_menu.resumed.connect(_on_pause_resumed)
 
 	btn_tsumo.pressed.connect(_on_tsumo_pressed)
@@ -53,11 +63,17 @@ func _ready() -> void:
 	action_bar.visible = false
 
 	result_layer.visible = false
+	board_inspection_layer.visible = false
+
 	btn_result_next.pressed.connect(_on_result_next_pressed)
+	btn_result_board.pressed.connect(_on_view_board_pressed)
 	btn_result_title.pressed.connect(_on_result_title_pressed)
+
 	btn_result_next.focus_neighbor_top = btn_result_title.get_path()
-	btn_result_next.focus_neighbor_bottom = btn_result_title.get_path()
-	btn_result_title.focus_neighbor_top = btn_result_next.get_path()
+	btn_result_next.focus_neighbor_bottom = btn_result_board.get_path()
+	btn_result_board.focus_neighbor_top = btn_result_next.get_path()
+	btn_result_board.focus_neighbor_bottom = btn_result_title.get_path()
+	btn_result_title.focus_neighbor_top = btn_result_board.get_path()
 	btn_result_title.focus_neighbor_bottom = btn_result_next.get_path()
 
 	var sanma = GlobalState.is_sanma if has_node("/root/GlobalState") else false
@@ -85,7 +101,7 @@ func _update_table_view() -> void:
 	_update_scores()
 	_update_info_box()
 
-func _render_player_hand() -> void:
+func _render_player_hand(target_player: int = 0) -> void:
 	for child in tile_container.get_children():
 		child.queue_free()
 	for child in tsumo_slot.get_children():
@@ -93,8 +109,11 @@ func _render_player_hand() -> void:
 	tile_nodes.clear()
 	tsumo_node = null
 
-	var hand = game.hands[0]
-	var has_tsumo = (game.current_turn == 0 and game.current_drawn_tile != -1)
+	if target_player < 0 or target_player >= game.hands.size():
+		target_player = 0
+
+	var hand = game.hands[target_player]
+	var has_tsumo = (hand.size() % 3 == 2) # 14枚やツモ完了時
 	var main_count = (hand.size() - 1) if has_tsumo else hand.size()
 
 	for i in range(main_count):
@@ -105,7 +124,7 @@ func _render_player_hand() -> void:
 		tn.set_tile(hand[i])
 		tile_nodes.append(tn)
 
-	# ツモ牌
+	# ツモ/アガリ牌
 	if has_tsumo and hand.size() > 0:
 		var tn: TileNode = tile_scene.instantiate()
 		tn.custom_minimum_size = SIZE_HAND_TILE
@@ -171,28 +190,104 @@ func _render_dora() -> void:
 
 func _update_scores() -> void:
 	var labels = [score_label_0, score_label_1, score_label_2, score_label_3]
+	var badges = [riichi_badge_0, riichi_badge_1, riichi_badge_2, riichi_badge_3]
 	var names = ["自家", "下家", "対面", "上家"]
 	for i in range(game.num_players):
-		var mark = " [立直]" if game.is_riichi[i] else ""
-		labels[i].text = "%s: %d点%s" % [names[i], game.scores[i], mark]
+		badges[i].visible = game.is_riichi[i]
 		if i == game.current_turn:
-			labels[i].modulate = Color(1.0, 0.9, 0.2)
+			labels[i].text = "▶ %s: %d点 (手番)" % [names[i], game.scores[i]]
+			labels[i].modulate = Color(1.0, 0.95, 0.3)
 		else:
-			labels[i].modulate = Color.WHITE
+			labels[i].text = "%s: %d点" % [names[i], game.scores[i]]
+			labels[i].modulate = Color(0.85, 0.85, 0.85)
 
 func _update_info_box() -> void:
 	var mode_name = "3人麻雀" if game.is_sanma else "4人麻雀"
 	var riichi_txt = " | 供託: %d本" % game.riichi_sticks if game.riichi_sticks > 0 else ""
-	center_info_label.text = "%s 東%d局%s" % [mode_name, game.round_num, riichi_txt]
+	var names = ["自家", "下家", "対面", "上家"]
+	var turn_txt = "【手番: %s】" % names[game.current_turn]
+	center_info_label.text = "%s 東%d局\n%s%s" % [mode_name, game.round_num, turn_txt, riichi_txt]
 	remaining_tiles_label.text = "残 %d枚" % game.wall.size()
+	
+	# 下部ヒントを手番に応じて切り替え
+	if not is_action_mode and not is_riichi_selection_mode:
+		if game.current_turn == 0:
+			if game.is_riichi[0]:
+				bottom_hint.text = "【自家手番・立直中】 [A]: ツモ切り  |  [START]: ポーズ"
+			else:
+				var action_hint = " | [▲]: アクション" if (game.can_player_tsumo() or game.can_player_riichi()) else ""
+				bottom_hint.text = "【自家手番】 [◀/▶]: 牌選択  |  [A]: 打牌%s  |  [START]: ポーズ" % action_hint
+		else:
+			bottom_hint.text = "【相手手番】 %sが思考中...  |  [START]: ポーズ" % names[game.current_turn]
+
+func _show_riichi_banner(p: int) -> void:
+	var names = ["自家", "下家", "対面", "上家"]
+	riichi_banner_label.text = "【%s】 立直！" % names[p]
+	riichi_layer.visible = true
+	if AudioManager:
+		AudioManager.play_flip(true)
+	
+	var t = get_tree().create_timer(1.3)
+	t.timeout.connect(func():
+		if riichi_layer:
+			riichi_layer.visible = false
+	)
 
 # ----------------- 入力処理 -----------------
 
+func _is_action_pressed_safe(event: InputEvent, action: String) -> bool:
+	if event.is_action_pressed(action):
+		return true
+	# フォールバック判定 (Android / Joypad 直接対応)
+	if action == "ui_accept":
+		if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_A:
+			return true
+		if event is InputEventKey and event.pressed:
+			if event.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_Z]:
+				return true
+	elif action == "ui_cancel":
+		if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_B:
+			return true
+		if event is InputEventKey and event.pressed:
+			if event.keycode in [KEY_ESCAPE, KEY_BACK, KEY_X]:
+				return true
+	elif action in ["move_left", "ui_left"]:
+		if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_DPAD_LEFT:
+			return true
+		if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_X and event.axis_value < -0.5:
+			return true
+	elif action in ["move_right", "ui_right"]:
+		if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_DPAD_RIGHT:
+			return true
+		if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_X and event.axis_value > 0.5:
+			return true
+	elif action in ["move_up", "ui_up"]:
+		if event is InputEventJoypadButton and event.pressed and (event.button_index in [JOY_BUTTON_DPAD_UP, JOY_BUTTON_Y, JOY_BUTTON_X]):
+			return true
+	return false
+
 func _unhandled_input(event: InputEvent) -> void:
-	if result_layer.visible:
+	# 盤面確認中: 任意のボタンで結果画面へ復帰
+	if is_inspecting_board:
+		if event is InputEventKey or event is InputEventJoypadButton:
+			if event.pressed:
+				get_viewport().set_input_as_handled()
+				_return_from_board_inspection()
+				return
 		return
 
-	if event.is_action_pressed("pause"):
+	# 結果表示中: Xボタンまたはキャンセルキーで盤面確認
+	if result_layer.visible:
+		if _is_action_pressed_safe(event, "ui_cancel") or (event is InputEventJoypadButton and event.pressed and event.button_index in [JOY_BUTTON_X, JOY_BUTTON_Y]) or (event is InputEventKey and event.pressed and event.keycode == KEY_X):
+			get_viewport().set_input_as_handled()
+			_on_view_board_pressed()
+			return
+		return
+
+	if get_tree().paused:
+		return
+
+	if _is_action_pressed_safe(event, "pause"):
 		get_viewport().set_input_as_handled()
 		pause_menu.open()
 		return
@@ -202,7 +297,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# アクションバー表示中 (ツモ / リーチ / パス)
 	if is_action_mode:
-		if event.is_action_pressed("ui_cancel"):
+		if _is_action_pressed_safe(event, "ui_cancel"):
 			get_viewport().set_input_as_handled()
 			_on_pass_pressed()
 		return
@@ -214,14 +309,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# 自家がリーチ済みの場合の入力制御 (手牌変更不可、ツモ切りかツモ和了のみ)
 	if game.is_riichi[0]:
-		if event.is_action_pressed("ui_accept"):
+		if _is_action_pressed_safe(event, "ui_accept"):
 			get_viewport().set_input_as_handled()
 			# ツモ切り
 			_discard_selected_tile()
 		return
 
 	# 通常手牌カーソル移動
-	if event.is_action_pressed("move_left") or event.is_action_pressed("ui_left"):
+	if _is_action_pressed_safe(event, "move_left") or _is_action_pressed_safe(event, "ui_left"):
 		get_viewport().set_input_as_handled()
 		selected_tile_idx = (selected_tile_idx - 1 + tile_nodes.size()) % tile_nodes.size()
 		if AudioManager:
@@ -229,7 +324,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_update_cursor()
 		return
 
-	if event.is_action_pressed("move_right") or event.is_action_pressed("ui_right"):
+	if _is_action_pressed_safe(event, "move_right") or _is_action_pressed_safe(event, "ui_right"):
 		get_viewport().set_input_as_handled()
 		selected_tile_idx = (selected_tile_idx + 1) % tile_nodes.size()
 		if AudioManager:
@@ -238,28 +333,28 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	# Aボタンで打牌
-	if event.is_action_pressed("ui_accept"):
+	if _is_action_pressed_safe(event, "ui_accept"):
 		get_viewport().set_input_as_handled()
 		_discard_selected_tile()
 		return
 
 	# 上キーまたはYボタンでアクションバー表示
-	if event.is_action_pressed("move_up") or event.is_action_pressed("ui_up"):
+	if _is_action_pressed_safe(event, "move_up") or _is_action_pressed_safe(event, "ui_up"):
 		if game.can_player_tsumo() or game.can_player_riichi():
 			get_viewport().set_input_as_handled()
 			_open_action_bar()
 
 # リーチ牌選択専用の入力処理
 func _handle_riichi_selection_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
+	if _is_action_pressed_safe(event, "ui_cancel"):
 		get_viewport().set_input_as_handled()
 		# リーチ選択をキャンセル
 		is_riichi_selection_mode = false
-		bottom_hint.text = "[◀/▶]: 牌選択  |  [A]: 打牌  |  [▲]: アクション  |  [START]: ポーズ"
+		_update_info_box()
 		_update_cursor()
 		return
 
-	if event.is_action_pressed("move_left") or event.is_action_pressed("ui_left"):
+	if _is_action_pressed_safe(event, "move_left") or _is_action_pressed_safe(event, "ui_left"):
 		get_viewport().set_input_as_handled()
 		var cur_pos = riichi_candidate_indices.find(selected_tile_idx)
 		if cur_pos == -1:
@@ -272,7 +367,7 @@ func _handle_riichi_selection_input(event: InputEvent) -> void:
 		_update_cursor()
 		return
 
-	if event.is_action_pressed("move_right") or event.is_action_pressed("ui_right"):
+	if _is_action_pressed_safe(event, "move_right") or _is_action_pressed_safe(event, "ui_right"):
 		get_viewport().set_input_as_handled()
 		var cur_pos = riichi_candidate_indices.find(selected_tile_idx)
 		if cur_pos == -1:
@@ -285,7 +380,7 @@ func _handle_riichi_selection_input(event: InputEvent) -> void:
 		_update_cursor()
 		return
 
-	if event.is_action_pressed("ui_accept"):
+	if _is_action_pressed_safe(event, "ui_accept"):
 		get_viewport().set_input_as_handled()
 		# 選択された牌で立直を確定！
 		_confirm_riichi(selected_tile_idx)
@@ -369,8 +464,10 @@ func _on_tile_drawn(p: int, _tile: int) -> void:
 					_discard_selected_tile()
 			)
 
-func _on_tile_discarded(_p: int, _tile: int, _is_tsumogiri: bool, _is_riichi_action: bool = false) -> void:
-	if AudioManager:
+func _on_tile_discarded(p: int, _tile: int, _is_tsumogiri: bool, is_riichi_action: bool = false) -> void:
+	if is_riichi_action:
+		_show_riichi_banner(p)
+	elif AudioManager:
 		AudioManager.play_select()
 	_update_table_view()
 
@@ -381,8 +478,26 @@ func _on_cpu_turn_ready(p: int) -> void:
 			game.execute_cpu_turn(p)
 	)
 
+func _on_view_board_pressed() -> void:
+	is_inspecting_board = true
+	result_layer.visible = false
+	board_inspection_layer.visible = true
+	if AudioManager:
+		AudioManager.play_select()
+
+func _return_from_board_inspection() -> void:
+	is_inspecting_board = false
+	board_inspection_layer.visible = false
+	result_layer.visible = true
+	btn_result_board.grab_focus()
+	if AudioManager:
+		AudioManager.play_cancel()
+
 func _on_agari_declared(winner_idx: int, loser_idx: int, result: YakuEvaluator.AgariResult) -> void:
+	last_winner_idx = winner_idx
 	_update_table_view()
+	# 和了者の手牌を開示（倒牌）して画面下に表示
+	_render_player_hand(winner_idx)
 	if AudioManager:
 		AudioManager.play_clear()
 
@@ -416,6 +531,7 @@ func _on_agari_declared(winner_idx: int, loser_idx: int, result: YakuEvaluator.A
 	btn_result_next.grab_focus()
 
 func _on_round_ended(reason: String) -> void:
+	last_winner_idx = -1
 	result_title.text = "【流局】"
 	result_detail.text = reason
 	result_score.text = "供託リーチ棒: %d本持越し" % game.riichi_sticks if game.riichi_sticks > 0 else ""
@@ -427,7 +543,10 @@ func _on_round_ended(reason: String) -> void:
 func _on_result_next_pressed() -> void:
 	get_tree().paused = false
 	result_layer.visible = false
+	board_inspection_layer.visible = false
+	is_inspecting_board = false
 	is_riichi_selection_mode = false
+	last_winner_idx = -1
 	game.round_num += 1
 	game.start_round()
 	_update_table_view()
