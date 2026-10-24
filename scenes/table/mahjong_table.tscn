@@ -1,0 +1,372 @@
+[gd_scene load_steps=8 format=3 uid="uid://b3v9m8k7w6e5"]
+
+[ext_resource type="Script" path="res://scenes/table/mahjong_table.gd" id="1_table"]
+[ext_resource type="PackedScene" uid="uid://b8y4m5f6q1a1" path="res://scenes/ui/pause_menu.tscn" id="2_pause"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mat"]
+bg_color = Color(0.09, 0.22, 0.14, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.2, 0.12, 0.06, 1)
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_center"]
+bg_color = Color(0.06, 0.15, 0.1, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.5, 0.35, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_action_btn"]
+bg_color = Color(0.12, 0.4, 0.65, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.75, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_action_btn_focus"]
+bg_color = Color(0.18, 0.6, 0.9, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0.2, 0.7, 1, 0.5)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result_panel"]
+bg_color = Color(0.08, 0.12, 0.18, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9, 0.7, 0.2, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_size = 20
+
+[node name="MahjongTable" type="Node2D"]
+process_mode = 1
+script = ExtResource("1_table")
+
+[node name="MatBackground" type="Panel" parent="."]
+custom_minimum_size = Vector2(720, 720)
+offset_right = 720.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_mat")
+
+[node name="TableCenter" type="Panel" parent="."]
+custom_minimum_size = Vector2(190, 190)
+offset_left = 265.0
+offset_top = 265.0
+offset_right = 455.0
+offset_bottom = 455.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_center")
+
+[node name="InfoBox" type="VBoxContainer" parent="TableCenter"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="CenterLabel" type="Label" parent="TableCenter/InfoBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 17
+text = "4人麻雀 東1局"
+horizontal_alignment = 1
+
+[node name="RemainingLabel" type="Label" parent="TableCenter/InfoBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.9, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "残 70枚"
+horizontal_alignment = 1
+
+[node name="DoraBox" type="VBoxContainer" parent="TableCenter"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -68.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="DoraTitle" type="Label" parent="TableCenter/DoraBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 11
+text = "- ドラ表示牌 -"
+horizontal_alignment = 1
+
+[node name="DoraContainer" type="HBoxContainer" parent="TableCenter/DoraBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="DiscardsContainer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 720.0
+offset_bottom = 720.0
+
+[node name="Discards0" type="GridContainer" parent="DiscardsContainer"]
+layout_mode = 0
+offset_left = 302.0
+offset_top = 466.0
+offset_right = 418.0
+offset_bottom = 548.0
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 2
+columns = 6
+
+[node name="Discards2" type="GridContainer" parent="DiscardsContainer"]
+layout_mode = 0
+offset_left = 302.0
+offset_top = 172.0
+offset_right = 418.0
+offset_bottom = 254.0
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 2
+columns = 6
+
+[node name="Discards3" type="GridContainer" parent="DiscardsContainer"]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 318.0
+offset_right = 252.0
+offset_bottom = 400.0
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 2
+columns = 6
+
+[node name="Discards1" type="GridContainer" parent="DiscardsContainer"]
+layout_mode = 0
+offset_left = 468.0
+offset_top = 318.0
+offset_right = 584.0
+offset_bottom = 400.0
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 2
+columns = 6
+
+[node name="Scores" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 720.0
+offset_bottom = 720.0
+
+[node name="Score0" type="Label" parent="Scores"]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 560.0
+offset_right = 480.0
+offset_bottom = 586.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "自家: 25000点"
+horizontal_alignment = 1
+
+[node name="Score1" type="Label" parent="Scores"]
+layout_mode = 0
+offset_left = 475.0
+offset_top = 286.0
+offset_right = 690.0
+offset_bottom = 312.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "下家: 25000点"
+
+[node name="Score2" type="Label" parent="Scores"]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 140.0
+offset_right = 480.0
+offset_bottom = 166.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "対面: 25000点"
+horizontal_alignment = 1
+
+[node name="Score3" type="Label" parent="Scores"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 286.0
+offset_right = 245.0
+offset_bottom = 312.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "上家: 25000点"
+
+[node name="PlayerHand" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 600.0
+offset_right = 720.0
+offset_bottom = 678.0
+
+[node name="Tiles" type="HBoxContainer" parent="PlayerHand"]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 600.0
+offset_bottom = 60.0
+theme_override_constants/separation = 2
+
+[node name="TsumoSlot" type="Control" parent="PlayerHand"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 622.0
+offset_right = 664.0
+offset_bottom = 60.0
+
+[node name="ActionBar" type="HBoxContainer" parent="PlayerHand"]
+visible = false
+layout_mode = 0
+offset_left = 340.0
+offset_top = -46.0
+offset_right = 664.0
+offset_bottom = -10.0
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="BtnTsumo" type="Button" parent="PlayerHand/ActionBar"]
+custom_minimum_size = Vector2(88, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "ツモ和了"
+
+[node name="BtnRiichi" type="Button" parent="PlayerHand/ActionBar"]
+custom_minimum_size = Vector2(88, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "立直"
+
+[node name="BtnPass" type="Button" parent="PlayerHand/ActionBar"]
+custom_minimum_size = Vector2(80, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "パス"
+
+[node name="BottomHint" type="Label" parent="."]
+offset_top = 688.0
+offset_right = 720.0
+offset_bottom = 716.0
+theme_override_colors/font_color = Color(0.7, 0.85, 0.75, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "[◀/▶]: 牌選択  |  [A]: 打牌  |  [▲]: アクション  |  [START]: ポーズ"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PauseMenu" parent="." instance=ExtResource("2_pause")]
+
+[node name="ResultLayer" type="CanvasLayer" parent="."]
+layer = 90
+
+[node name="Backdrop" type="ColorRect" parent="ResultLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.04, 0.06, 0.8)
+
+[node name="Center" type="CenterContainer" parent="ResultLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ResultLayer/Center"]
+custom_minimum_size = Vector2(460, 380)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_result_panel")
+
+[node name="VBox" type="VBoxContainer" parent="ResultLayer/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="ResultLayer/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "【自家】 ツモ和了！"
+horizontal_alignment = 1
+
+[node name="DetailLabel" type="Label" parent="ResultLayer/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "立直
+門前清自摸和
+断幺九"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="ResultLayer/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 24
+text = "満貫 (3翻 40符 8000点)"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="ResultLayer/Center/Panel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnNext" type="Button" parent="ResultLayer/Center/Panel/VBox"]
+custom_minimum_size = Vector2(280, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "▶ 次の局へ"
+
+[node name="BtnTitle" type="Button" parent="ResultLayer/Center/Panel/VBox"]
+custom_minimum_size = Vector2(280, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_action_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_action_btn_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_action_btn_focus")
+text = "⌂ タイトルへ"

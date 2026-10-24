@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5v8b7n6m5q1"]
+
+[ext_resource type="Script" path="res://scenes/table/tile_node.gd" id="1_tile"]
+
+[node name="TileNode" type="Control"]
+custom_minimum_size = Vector2(42, 60)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 42.0
+offset_bottom = 60.0
+script = ExtResource("1_tile")
